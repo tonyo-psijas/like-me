@@ -15,14 +15,28 @@ app.listen(PORT, () => {
 
 app.get("/posts", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM posts");
-    res.json(result.rows);
+      const result = await pool.query("SELECT * FROM posts");
+      res.json(result.rows);
   } catch (error) {
-    console.error("Error en la consulta POST /posts: " + error);
-    res.status(500).json({
-      error: error.code,
-      message: error.message,
-    });
+      console.error("Error en la consulta GET /posts: " + error);
+      res.status(500).json({
+        error: error.code,
+        message: error.message,
+      });
+  }
+});
+
+app.get("/posts/:id", async (req, res) => {
+  try {
+      const { id } = req.params
+      const result = await pool.query("SELECT * FROM posts WHERE id = $1", [id]);
+      res.json(result.rows);
+  } catch (error) {
+      console.error("Error en la consulta GET /posts/:id: " + error);
+      res.status(500).json({
+        error: error.code,
+        message: error.message,
+      });
   }
 });
 
@@ -42,6 +56,24 @@ app.post('/posts', async (req, res) => {
         })
     }
 });
+
+app.put('/posts/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        const { titulo, img, descripcion } = req.body
+        const values = [titulo, img, descripcion, id]
+
+        const result = await pool.query("UPDATE posts SET titulo = $1, img = $2, descripcion = $3 WHERE id = $4", values)
+        res.send("Post actualizado con éxito")
+
+    } catch (error) {
+        console.error("Error en la consulta PUT /posts/:id: " + error)
+        res.status(500).json({
+            error: error.code,
+            message: error.message
+        })
+    }
+})
 
 app.delete('/posts/:id', async (req, res) =>{
     try {
